@@ -1,0 +1,32 @@
+Global global:
+	include = ['iostream', 'string', 'vector', 'map']
+	namespace = ['std']
+	magicMap = 0
+	define = {'CD_SHOT' : 2, 'CD_MINE' : 5, 'DIST_MAX' : 1000, 'PORTEE_SHOT' : 10}
+
+Game game:
+	argsGame = ['fake']
+	argsTurn = ['teamSize', 'nbEntities']
+	argNbEntities = nbEntities
+	nbEntityArgs = 4
+	vars = ['fake2']
+
+Entity SHIP:
+	name = Ship
+	dico = ships
+	args = ['cap', 'vitesse', 'rhum']
+	vars = ['cooldownShot', 'cooldownTrap', 'idBarrelGoal']
+
+Entity BARREL:
+	name = Barrel
+	dico = barrels
+	args = ['rhum']
+
+Entity CANNONBALL:
+	name = Ball
+	dico = balls
+	args = ['idLanceur', 'cooldown']
+
+Entity MINE:
+	name = Mine
+	dico = mines
