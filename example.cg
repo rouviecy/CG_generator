@@ -1,15 +1,15 @@
 Global global:
 	include = ['iostream', 'string', 'vector', 'map']
 	namespace = ['std']
-	magicMap = 0
+	magicMap = True
 	define = {'CD_SHOT' : 2, 'CD_MINE' : 5, 'DIST_MAX' : 1000, 'PORTEE_SHOT' : 10}
 
 Game game:
-	argsGame = ['fake']
+	argsGame = []
 	argsTurn = ['teamSize', 'nbEntities']
 	argNbEntities = nbEntities
 	nbEntityArgs = 4
-	vars = ['fake2']
+	vars = []
 
 Entity SHIP:
 	name = Ship

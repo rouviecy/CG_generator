@@ -5,10 +5,12 @@
 
 using namespace std;
 
-#define DIST_MAX 1000
-#define CD_SHOT 2
-#define CD_MINE 5
+#define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)
+
 #define PORTEE_SHOT 10
+#define DIST_MAX 1000
+#define CD_MINE 5
+#define CD_SHOT 2
 
 class Game;
 class Entity;
@@ -121,8 +123,6 @@ void Mine::Update(int id, int x, int y){
 }
 
 Game::Game(){
-    cin >> fake ; cin.ignore;
-    this->fake2 = 0;
 }
 
 void Game::InputTurn(){
@@ -153,19 +153,19 @@ void Game::InputTurn(){
             minesStillExists[id] = true;
         }
     }
-    for(map <int, Ship> ::iterator it = ships.begin(); it != ships.end(); ++it){
+    forMap(int, Ship, it, ships){
         if(shipsStillExists.find(it->first) == shipsStillExists.end()){it = ships.erase(it);}
         else{++it;}
     }
-    for(map <int, Barrel> ::iterator it = barrels.begin(); it != barrels.end(); ++it){
+    forMap(int, Barrel, it, barrels){
         if(barrelsStillExists.find(it->first) == barrelsStillExists.end()){it = barrels.erase(it);}
         else{++it;}
     }
-    for(map <int, Ball> ::iterator it = balls.begin(); it != balls.end(); ++it){
+    forMap(int, Ball, it, balls){
         if(ballsStillExists.find(it->first) == ballsStillExists.end()){it = balls.erase(it);}
         else{++it;}
     }
-    for(map <int, Mine> ::iterator it = mines.begin(); it != mines.end(); ++it){
+    forMap(int, Mine, it, mines){
         if(minesStillExists.find(it->first) == minesStillExists.end()){it = mines.erase(it);}
         else{++it;}
     }
