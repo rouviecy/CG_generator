@@ -7,10 +7,10 @@ using namespace std;
 
 #define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)
 
+#define CD_SHOT 2
 #define PORTEE_SHOT 10
 #define DIST_MAX 1000
 #define CD_MINE 5
-#define CD_SHOT 2
 
 class Game;
 class Entity;
@@ -26,8 +26,11 @@ class Game{
         map <int, Ball> balls;
         map <int, Mine> mines;
         Game();
-        InputTurn();
-        Action();
+        void InputTurn();
+        void Action();
+    private:
+        void DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists);
+        template <class EntityType> void RefreshDico(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists, int id);
 };
 
 class Entity{
@@ -48,28 +51,28 @@ class Ship : public Entity{
         int cooldownShot;
         int cooldownTrap;
         int idBarrelGoal;
-        Ship()
-        void Update(int id, int x, int y, cap, vitesse, rhum);
+        Ship();
+        void Update(int id, int x, int y, int cap, int vitesse, int rhum);
 };
 
 class Barrel : public Entity{
     public:
         int rhum;
-        Barrel()
-        void Update(int id, int x, int y, rhum);
+        Barrel();
+        void Update(int id, int x, int y, int rhum);
 };
 
 class Ball : public Entity{
     public:
         int idLanceur;
         int cooldown;
-        Ball()
-        void Update(int id, int x, int y, idLanceur, cooldown);
+        Ball();
+        void Update(int id, int x, int y, int idLanceur, int cooldown);
 };
 
 class Mine : public Entity{
     public:
-        Mine()
+        Mine();
         void Update(int id, int x, int y);
 };
 
@@ -86,12 +89,12 @@ void Entity::Update(int id, int x, int y){
 }
 
 Ship::Ship() : Entity(){
-    this->cooldownShot = cooldownShot;
-    this->cooldownTrap = cooldownTrap;
-    this->idBarrelGoal = idBarrelGoal;
+    this->cooldownShot = 0;
+    this->cooldownTrap = 0;
+    this->idBarrelGoal = 0;
 }
 
-void Ship::Update(int id, int x, int y, cap, vitesse, rhum){
+void Ship::Update(int id, int x, int y, int cap, int vitesse, int rhum){
     Entity::Update(id, x, y);
     this->cap = cap;
     this->vitesse = vitesse;
@@ -101,7 +104,7 @@ void Ship::Update(int id, int x, int y, cap, vitesse, rhum){
 Barrel::Barrel() : Entity(){
 }
 
-void Barrel::Update(int id, int x, int y, rhum){
+void Barrel::Update(int id, int x, int y, int rhum){
     Entity::Update(id, x, y);
     this->rhum = rhum;
 }
@@ -109,7 +112,7 @@ void Barrel::Update(int id, int x, int y, rhum){
 Ball::Ball() : Entity(){
 }
 
-void Ball::Update(int id, int x, int y, idLanceur, cooldown){
+void Ball::Update(int id, int x, int y, int idLanceur, int cooldown){
     Entity::Update(id, x, y);
     this->idLanceur = idLanceur;
     this->cooldown = cooldown;
@@ -126,53 +129,50 @@ Game::Game(){
 }
 
 void Game::InputTurn(){
-    map <int, bool> shipsStillExists;
-    map <int, bool> barrelsStillExists;
-    map <int, bool> ballsStillExists;
-    map <int, bool> minesStillExists;
-    cin >> teamSize >> nbEntities ; cin.ignore;
+    map <int, bool> shipsStillExists, barrelsStillExists, ballsStillExists, minesStillExists;
+    cin >> teamSize >> nbEntities; cin.ignore;
     for(int i = 0; i < 4; i++){
-        int id, int x, int y, int arg0, int arg1, int arg2, int arg3;
-        string entityType;        cin >> id >> entityType >> x >> y>> arg0 >> arg1 >> arg2 >> arg3 ;
+        int id, x, y, arg1, arg2, arg3, arg4;
+        string entityType;
+        cin >> id >> entityType >> x >> y >> arg1 >> arg2 >> arg3 >> arg4; cin.ignore();
         if(false){}
-        else if(entityType.compare(SHIP) == 0){
-            if(ships.find(id) == ships.end()){ships[id] = Ship();}
-            ships[id].Update(id, x, y, cap, vitesse, rhum);
-            shipsStillExists[id] = true;
-        else if(entityType.compare(BARREL) == 0){
-            if(barrels.find(id) == barrels.end()){barrels[id] = Barrel();}
-            barrels[id].Update(id, x, y, rhum);
-            barrelsStillExists[id] = true;
-        else if(entityType.compare(CANNONBALL) == 0){
-            if(balls.find(id) == balls.end()){balls[id] = Ball();}
-            balls[id].Update(id, x, y, idLanceur, cooldown);
-            ballsStillExists[id] = true;
-        else if(entityType.compare(MINE) == 0){
-            if(mines.find(id) == mines.end()){mines[id] = Mine();}
+        else if(entityType.compare("SHIP") == 0){
+            ships[id].Update(id, x, y, arg1, arg2, arg3);
+            RefreshDico<Ship>(&ships, &shipsStillExists, id);
+        }
+        else if(entityType.compare("BARREL") == 0){
+            barrels[id].Update(id, x, y, arg1);
+            RefreshDico<Barrel>(&barrels, &barrelsStillExists, id);
+        }
+        else if(entityType.compare("CANNONBALL") == 0){
+            balls[id].Update(id, x, y, arg1, arg2);
+            RefreshDico<Ball>(&balls, &ballsStillExists, id);
+        }
+        else if(entityType.compare("MINE") == 0){
             mines[id].Update(id, x, y);
-            minesStillExists[id] = true;
+            RefreshDico<Mine>(&mines, &minesStillExists, id);
         }
     }
-    forMap(int, Ship, it, ships){
-        if(shipsStillExists.find(it->first) == shipsStillExists.end()){it = ships.erase(it);}
-        else{++it;}
-    }
-    forMap(int, Barrel, it, barrels){
-        if(barrelsStillExists.find(it->first) == barrelsStillExists.end()){it = barrels.erase(it);}
-        else{++it;}
-    }
-    forMap(int, Ball, it, balls){
-        if(ballsStillExists.find(it->first) == ballsStillExists.end()){it = balls.erase(it);}
-        else{++it;}
-    }
-    forMap(int, Mine, it, mines){
-        if(minesStillExists.find(it->first) == minesStillExists.end()){it = mines.erase(it);}
-        else{++it;}
-    }
+    DeleteObsoleteEntities(&ships, &shipsStillExists);
+    DeleteObsoleteEntities(&barrels, &barrelsStillExists);
+    DeleteObsoleteEntities(&balls, &ballsStillExists);
+    DeleteObsoleteEntities(&mines, &minesStillExists);
 }
 
 void Game::Action(){
     // Inserer ici les operations utiles pour chaque tour
+}
+
+void Game::DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists){
+    forMap(int, Entity, it, (*dicoToClean)){
+        if(dicoStillExists->find(it->first) == dicoStillExists->end()){it = dicoToClean->erase(it);}
+        else{++it;}
+    }
+}
+
+template <class EntityType> void Game::RefreshDico(map <int, EntityType> *dicoToRefresh, map <int, bool> *dicoStillExists, int id){
+    if(dicoToRefresh->find(id) == dicoToRefresh->end()){(*dicoToRefresh)[id] = EntityType();}
+    (*dicoStillExists)[id] = true;
 }
 
 int main(){
@@ -180,4 +180,6 @@ int main(){
     while(1){
         game.InputTurn();
         game.Action();
+    }
 }
+

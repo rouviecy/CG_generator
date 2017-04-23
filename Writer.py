@@ -54,8 +54,11 @@ class Writer:
 		for entity in entities:
 			text += self.indent(2) + "map <int, " + entity.name + "> " + entity.dico + ";\n"
 		text += self.indent(2) + "Game();\n"
-		text += self.indent(2) + "InputTurn();\n"
-		text += self.indent(2) + "Action();\n"
+		text += self.indent(2) + "void InputTurn();\n"
+		text += self.indent(2) + "void Action();\n"
+		text += self.indent(1) + "private:\n"
+		text += self.indent(2) + "void DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists);\n"
+		text += self.indent(2) + "template <class EntityType> void RefreshDico(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists, int id);\n"
 		text += "};\n\n"
 		return text
 
@@ -82,45 +85,60 @@ class Writer:
 			text += self.indent(1) + "this->" + variable + " = 0;\n"
 		text += "}\n\n"
 		text += "void Game::InputTurn(){\n"
-		for entity in entities:
-			text += self.indent(1) + "map <int, bool> " + entity.dico + "StillExists;\n"
+		if len(entities) > 0:
+			text += self.indent(1) + "map <int, bool> "
+			first = True
+			for entity in entities:
+				if not first:
+					text += ", "
+				text += entity.dico + "StillExists"
+				first = False
+			text += ";\n"
 		if len(game.argumentsTurn) > 0:
-			text += self.indent(1) + "cin "
+			text += self.indent(1) + "cin"
 			for argument in game.argumentsTurn:
-				text += ">> " + argument + " "
+				text += " >> " + argument
 			text += "; cin.ignore;\n"
 		text += self.indent(1) + "for(int i = 0; i < " + str(game.nbEntityArgs) + "; i++){\n"
-		text += self.indent(2) + "int id, int x, int y"
+		text += self.indent(2) + "int id, x, y"
 		for i in range(game.nbEntityArgs):
-			text += ", int arg" + str(i)
+			text += ", arg" + str(i + 1)
 		text += ";\n"
-		text += self.indent(2) + "string entityType;"
+		text += self.indent(2) + "string entityType;\n"
 		text += self.indent(2) + "cin >> id >> entityType >> x >> y"
 		for i in range(game.nbEntityArgs):
-			text += ">> arg" + str(i) + " "
-		text += ";\n"
+			text += " >> arg" + str(i + 1)
+		text += "; cin.ignore();\n"
 		text += self.indent(2) + "if(false){}\n"
 		for entity in entities:
-			text += self.indent(2) + "else if(entityType.compare(" + entity.entity + ") == 0){\n"
-			text += self.indent(3) + "if(" + entity.dico + ".find(id) == " + entity.dico + ".end()){" + entity.dico + "[id] = " + entity.name + "();}\n"
+			text += self.indent(2) + "else if(entityType.compare(\"" + entity.entity + "\") == 0){\n"
 			text += self.indent(3) + entity.dico + "[id].Update(id, x, y"
+			i = 0
 			for argument in entity.arguments:
-				text += ", " + argument
+				text += ", arg" + str(i + 1)
+				i += 1
 			text += ");\n"
-			text += self.indent(3) + entity.dico + "StillExists[id] = true;\n"
-		text += self.indent(2) + "}\n"
+			text += self.indent(3) + "RefreshDico<" + entity.name + ">(&" + entity.dico + ", &" + entity.dico + "StillExists, id);\n"
+			text += self.indent(2) + "}\n"
 		text += self.indent(1) + "}\n"
 		for entity in entities:
-			if globalBloc.magicMap:
-				text += self.indent(1) + "forMap(int, " + entity.name + ", it, " + entity.dico + "){\n"
-			else:
-				text += self.indent(1) + "for(map <int, " + entity.name + "> ::iterator it = " + entity.dico + ".begin(); it != " + entity.dico + ".end(); ++it){\n"
-			text += self.indent(2) + "if(" + entity.dico + "StillExists.find(it->first) == " + entity.dico + "StillExists.end()){it = " + entity.dico + ".erase(it);}\n"
-			text += self.indent(2) + "else{++it;}\n"
-			text += self.indent(1) + "}\n"
+			text += self.indent(1) + "DeleteObsoleteEntities(&" + entity.dico + ", &" + entity.dico + "StillExists);\n"
 		text += "}\n\n"
 		text += "void Game::Action(){\n"
 		text += self.indent(1) + "// Inserer ici les operations utiles pour chaque tour\n"
+		text += "}\n\n"
+		text += "void Game::DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists){\n"
+		if globalBloc.magicMap:
+			text += self.indent(1) + "forMap(int, Entity, it, (*dicoToClean)){\n"
+		else:
+			text += self.indent(1) + "for(map <int, Entity> ::iterator it = dicoToClean->begin(); it != dicoToClean->end(); ++it){\n"
+		text += self.indent(2) + "if(dicoStillExists->find(it->first) == dicoStillExists->end()){it = dicoToClean->erase(it);}\n"
+		text += self.indent(2) + "else{++it;}\n"
+		text += self.indent(1) + "}\n"
+		text += "}\n\n"
+		text += "template <class EntityType> void Game::RefreshDico(map <int, EntityType> *dicoToRefresh, map <int, bool> *dicoStillExists, int id){\n"
+		text += self.indent(1) + "if(dicoToRefresh->find(id) == dicoToRefresh->end()){(*dicoToRefresh)[id] = EntityType();}\n"
+		text += self.indent(1) + "(*dicoStillExists)[id] = true;\n"
 		text += "}\n\n"
 		return text
 		
@@ -143,10 +161,10 @@ class Writer:
 			text += self.indent(2) + "int " + argument + ";\n"
 		for variable in entity.variables:
 			text += self.indent(2) + "int " + variable + ";\n"
-		text += self.indent(2) + entity.name + "()\n"
+		text += self.indent(2) + entity.name + "();\n"
 		text += self.indent(2) + "void Update(int id, int x, int y"
 		for argument in entity.arguments:
-			text += ", " + argument
+			text += ", int " + argument
 		text += ");\n"
 		text += "};\n\n"
 		return text
@@ -154,11 +172,11 @@ class Writer:
 	def genEntityChildCPP(self, entity):
 		text = entity.name + "::" + entity.name + "() : Entity(){\n"
 		for variable in entity.variables:
-			text += self.indent(1) + "this->" + variable + " = " + variable + ";\n"
+			text += self.indent(1) + "this->" + variable + " = 0;\n"
 		text += "}\n\n"
 		text += "void " + entity.name + "::Update(int id, int x, int y"
 		for argument in entity.arguments:
-			text += ", " + argument
+			text += ", int " + argument
 		text += "){\n"
 		text += self.indent(1) + "Entity::Update(id, x, y);\n"
 		for argument in entity.arguments:
@@ -172,7 +190,8 @@ class Writer:
 		text += self.indent(1) + "while(1){\n"
 		text += self.indent(2) + "game.InputTurn();\n"
 		text += self.indent(2) + "game.Action();\n"
-		text += "}\n"
+		text += self.indent(1) + "}\n"
+		text += "}\n\n"
 		return text
 
 	def indent(self, nb):
