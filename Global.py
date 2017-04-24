@@ -14,3 +14,34 @@ class Global:
 		self.magicMap = Extractor.extractBoolean('magicMap', bloc)
 		self.defines = Extractor.extractList('define', bloc)
 
+	def write(self, entities):
+		readonlyH = open("./CPP/readonly/common_readonly.h", 'w')
+		readonlyH.write(self.genReadonlyH(entities))
+		templateH = open("./CPP/template/common.h", 'w')
+		templateH.write(self.genTemplateH())
+
+	def genReadonlyH(self, entities):
+		text = "#ifndef COMMON_READONLY_H\n"
+		text += "#define COMMON_READONLY_H\n\n"
+		for include in self.includes:
+			text += "#include <" + include + ">\n"
+		text += "\n"
+		for namespace in self.namespaces:
+			text += "using namespace " + namespace + ";\n"
+		text += "\n"
+		if self.magicMap:
+			text += "#define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)\n"
+			text += "#define forMapTypename(type1, type2, it, carte) for(typename map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)\n\n"
+		for defineKey in self.defines.keys():
+			text += "#define " + defineKey + " " + str(self.defines[defineKey]) + "\n"
+		text += "\n"
+		text += "class Game;\nclass Entity;\n"
+		for entity in entities:
+			text += "class " + entity.name + ";\n"
+		text += "\n"
+		text += "#endif"
+		return text
+
+	def genTemplateH(self):
+		text = "#include \"../readonly/common_readonly.h\"\n"
+		return text
