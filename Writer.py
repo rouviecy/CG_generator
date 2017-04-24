@@ -14,7 +14,7 @@ class Writer:
 		output = ""
 		output += self.genGlobalBloc(globalBloc)
 		output += self.genListClasses(entities)
-		output += self.genGameH(entities)
+		output += self.genGameH(game, entities)
 		output += self.genEntityMotherH()
 		for entity in entities:
 			output += self.genEntityChildH(entity)
@@ -35,7 +35,8 @@ class Writer:
 			text += "using namespace " + namespace + ";\n"
 		text += "\n"
 		if globalBloc.magicMap:
-			text += "#define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)\n\n"
+			text += "#define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)\n"
+			text += "#define forMapTypename(type1, type2, it, carte) for(typename map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)\n\n"
 		for defineKey in globalBloc.defines.keys():
 			text += "#define " + defineKey + " " + str(globalBloc.defines[defineKey]) + "\n"
 		text += "\n"
@@ -48,16 +49,20 @@ class Writer:
 		text += "\n"
 		return text
 
-	def genGameH(self, entities):
+	def genGameH(self, game, entities):
 		text = "class Game{\n"
 		text += self.indent(1) + "public:\n"
+		for argument in game.argumentsGame:
+			text += self.indent(2) + "int " + argument + ";\n"
+		for variable in game.variables:
+			text += self.indent(2) + "int " + argument + ";\n"
 		for entity in entities:
 			text += self.indent(2) + "map <int, " + entity.name + "> " + entity.dico + ";\n"
 		text += self.indent(2) + "Game();\n"
 		text += self.indent(2) + "void InputTurn();\n"
 		text += self.indent(2) + "void Action();\n"
 		text += self.indent(1) + "private:\n"
-		text += self.indent(2) + "void DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists);\n"
+		text += self.indent(2) + "template <class EntityType> void DeleteObsoleteEntities(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists);\n"
 		text += self.indent(2) + "template <class EntityType> void RefreshDico(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists, int id);\n"
 		text += "};\n\n"
 		return text
@@ -80,7 +85,7 @@ class Writer:
 			text += self.indent(1) + "cin "
 			for argument in game.argumentsGame:
 				text += ">> " + argument + " "
-			text += "; cin.ignore;\n"
+			text += "; cin.ignore();\n"
 		for variable in game.variables:
 			text += self.indent(1) + "this->" + variable + " = 0;\n"
 		text += "}\n\n"
@@ -95,10 +100,19 @@ class Writer:
 				first = False
 			text += ";\n"
 		if len(game.argumentsTurn) > 0:
+			text += self.indent(1) + "int "
+			first = True
+			for argument in game.argumentsTurn:
+				if not first:
+					text += ", "
+				text += argument
+				first = False
+			text += ";\n"
+		if len(game.argumentsTurn) > 0:
 			text += self.indent(1) + "cin"
 			for argument in game.argumentsTurn:
 				text += " >> " + argument
-			text += "; cin.ignore;\n"
+			text += "; cin.ignore();\n"
 		text += self.indent(1) + "for(int i = 0; i < " + str(game.nbEntityArgs) + "; i++){\n"
 		text += self.indent(2) + "int id, x, y"
 		for i in range(game.nbEntityArgs):
@@ -122,16 +136,16 @@ class Writer:
 			text += self.indent(2) + "}\n"
 		text += self.indent(1) + "}\n"
 		for entity in entities:
-			text += self.indent(1) + "DeleteObsoleteEntities(&" + entity.dico + ", &" + entity.dico + "StillExists);\n"
+			text += self.indent(1) + "DeleteObsoleteEntities<" + entity.name + ">(&" + entity.dico + ", &" + entity.dico + "StillExists);\n"
 		text += "}\n\n"
 		text += "void Game::Action(){\n"
 		text += self.indent(1) + "// Inserer ici les operations utiles pour chaque tour\n"
 		text += "}\n\n"
-		text += "void Game::DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists){\n"
+		text += "template <class EntityType> void Game::DeleteObsoleteEntities(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists){\n"
 		if globalBloc.magicMap:
-			text += self.indent(1) + "forMap(int, Entity, it, (*dicoToClean)){\n"
+			text += self.indent(1) + "forMapTypename(int, EntityType, it, (*dicoToClean)){\n"
 		else:
-			text += self.indent(1) + "for(map <int, Entity> ::iterator it = dicoToClean->begin(); it != dicoToClean->end(); ++it){\n"
+			text += self.indent(1) + "for(typename map <int, Entity> ::iterator it = dicoToClean->begin(); it != dicoToClean->end(); ++it){\n"
 		text += self.indent(2) + "if(dicoStillExists->find(it->first) == dicoStillExists->end()){it = dicoToClean->erase(it);}\n"
 		text += self.indent(2) + "else{++it;}\n"
 		text += self.indent(1) + "}\n"

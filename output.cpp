@@ -6,11 +6,12 @@
 using namespace std;
 
 #define forMap(type1, type2, it, carte) for(map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)
+#define forMapTypename(type1, type2, it, carte) for(typename map<type1,type2>::iterator it = carte.begin(); it != carte.end(); ++it)
 
+#define CD_MINE 5
 #define CD_SHOT 2
 #define PORTEE_SHOT 10
 #define DIST_MAX 1000
-#define CD_MINE 5
 
 class Game;
 class Entity;
@@ -29,7 +30,7 @@ class Game{
         void InputTurn();
         void Action();
     private:
-        void DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists);
+        template <class EntityType> void DeleteObsoleteEntities(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists);
         template <class EntityType> void RefreshDico(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists, int id);
 };
 
@@ -130,7 +131,8 @@ Game::Game(){
 
 void Game::InputTurn(){
     map <int, bool> shipsStillExists, barrelsStillExists, ballsStillExists, minesStillExists;
-    cin >> teamSize >> nbEntities; cin.ignore;
+    int teamSize, nbEntities;
+    cin >> teamSize >> nbEntities; cin.ignore();
     for(int i = 0; i < 4; i++){
         int id, x, y, arg1, arg2, arg3, arg4;
         string entityType;
@@ -153,18 +155,18 @@ void Game::InputTurn(){
             RefreshDico<Mine>(&mines, &minesStillExists, id);
         }
     }
-    DeleteObsoleteEntities(&ships, &shipsStillExists);
-    DeleteObsoleteEntities(&barrels, &barrelsStillExists);
-    DeleteObsoleteEntities(&balls, &ballsStillExists);
-    DeleteObsoleteEntities(&mines, &minesStillExists);
+    DeleteObsoleteEntities<Ship>(&ships, &shipsStillExists);
+    DeleteObsoleteEntities<Barrel>(&barrels, &barrelsStillExists);
+    DeleteObsoleteEntities<Ball>(&balls, &ballsStillExists);
+    DeleteObsoleteEntities<Mine>(&mines, &minesStillExists);
 }
 
 void Game::Action(){
     // Inserer ici les operations utiles pour chaque tour
 }
 
-void Game::DeleteObsoleteEntities(map <int, Entity> *dicoToClean, map <int, bool> *dicoStillExists){
-    forMap(int, Entity, it, (*dicoToClean)){
+template <class EntityType> void Game::DeleteObsoleteEntities(map <int, EntityType> *dicoToClean, map <int, bool> *dicoStillExists){
+    forMapTypename(int, EntityType, it, (*dicoToClean)){
         if(dicoStillExists->find(it->first) == dicoStillExists->end()){it = dicoToClean->erase(it);}
         else{++it;}
     }
