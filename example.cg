@@ -1,5 +1,6 @@
 Global global:
-	include = ['iostream', 'string', 'vector', 'map']
+	exclude = ['iostream', 'string', 'vector', 'map']
+	include = []
 	namespace = ['std']
 	magicMap = True
 	define = {'CD_SHOT' : 2, 'CD_MINE' : 5, 'DIST_MAX' : 1000, 'PORTEE_SHOT' : 10}

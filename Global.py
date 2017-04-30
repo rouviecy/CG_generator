@@ -3,12 +3,14 @@ from Extractor import Extractor
 class Global:
 	
 	def __init__(self):
+		self.excludes = []
 		self.includes = []
 		self.namespaces = []
 		self.magicMap = False
 		self.defines = []
 
 	def decode(self, bloc):
+		self.excludes = Extractor.extractList('exclude', bloc)
 		self.includes = Extractor.extractList('include', bloc)
 		self.namespaces = Extractor.extractList('namespace', bloc)
 		self.magicMap = Extractor.extractBoolean('magicMap', bloc)
@@ -23,6 +25,10 @@ class Global:
 	def genReadonlyH(self, entities):
 		text = "#ifndef COMMON_READONLY_H\n"
 		text += "#define COMMON_READONLY_H\n\n"
+		text += "#ifndef EXPLICITE_EXCLUDE\n"
+		for exclude in self.excludes:
+			text += "#include <" + exclude + ">\n"
+		text += "#endif\n"
 		for include in self.includes:
 			text += "#include <" + include + ">\n"
 		text += "\n"
@@ -44,4 +50,10 @@ class Global:
 
 	def genTemplateH(self):
 		text = "#include \"../readonly/common_readonly.h\"\n"
+		return text
+
+	def genExcludedIncludes(self):
+		text = ""
+		for exclude in self.excludes:
+			text += "#include <" + exclude + ">\n"
 		return text

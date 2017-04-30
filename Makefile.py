@@ -13,7 +13,7 @@ class Makefile(Indentable):
 
 	def genReadonlyMakefile(self, entities):
 		text = "cmake_minimum_required(VERSION 2.8)\n"
-		text += "project(cg)\n\n"
+		text += "project(cg_generator)\n\n"
 		text += "set(CMAKE_CXX_FLAGS \"${CMAKE_CXX_FLAGS} -std=c++11\")\n\n"
 		text += "add_library(CG_GENERATOR\n"
 		text += self.indent(1) + "CPP/readonly/common_readonly.h\n"
@@ -35,6 +35,9 @@ class Makefile(Indentable):
 		text += ")\n\n"
 		text += "add_executable(cg CPP/readonly/main.cpp)\n"
 		text += "target_link_libraries(cg CG_GENERATOR)"
+		text += "\n\n"
+		text += "add_executable(cgcode CPP/readonly/mainMono.cpp)\n"
+		text += "set_target_properties(cgcode PROPERTIES COMPILE_FLAGS \"-E -P -DEXPLICITE_EXCLUDE\")"
 		return text
 
 	def genTemplateMakefile(self):

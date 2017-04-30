@@ -4,7 +4,7 @@ from EntityMother import EntityMother
 from Main import Main
 from Makefile import Makefile
 
-import sys
+import sys, os
 
 if __name__ == '__main__':
 	parser = Parser(sys.argv[1])
@@ -19,3 +19,8 @@ if __name__ == '__main__':
 	entityMother.write(parser.entities)
 	for entity in parser.entities:
 		entity.write()
+	mono = open('generatedMono.cpp', 'w')
+	mono.write(parser.globalBloc.genExcludedIncludes())
+	mono.close()
+	os.system("cd bin; cmake ..; make cg; make cgcode; cd ..; cat bin/CMakeFiles/cgcode.dir/CPP/readonly/mainMono.cpp.o >> ./generatedMono.cpp;")
+	

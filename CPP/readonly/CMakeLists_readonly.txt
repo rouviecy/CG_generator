@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 2.8)
-project(cg)
+project(cg_generator)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
@@ -34,3 +34,6 @@ add_library(CG_GENERATOR
 
 add_executable(cg CPP/readonly/main.cpp)
 target_link_libraries(cg CG_GENERATOR)
+
+add_executable(cgcode CPP/readonly/mainMono.cpp)
+set_target_properties(cgcode PROPERTIES COMPILE_FLAGS "-E -P -DEXPLICITE_EXCLUDE")
