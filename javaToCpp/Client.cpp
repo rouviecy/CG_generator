@@ -70,9 +70,8 @@ void Client::TCPToPipeLoop(){
 	char buffer[1024];
 	while(connected){
 		size_t inputSize = recv(sock, buffer, 1024, 0);
-		write(pipeIn[1], buffer, inputSize);
-cerr << buffer << endl;
-		if(inputSize == 0){
+		size_t outputSize = write(pipeIn[1], buffer, inputSize);
+		if(inputSize == 0 || outputSize == 0){
 			connected = false;
 		}
 	}

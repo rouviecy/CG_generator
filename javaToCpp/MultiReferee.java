@@ -151,7 +151,6 @@ abstract class MultiReferee{
 		Map <Integer, ArrayList <PlayerReferee> > scores = new TreeMap <Integer, ArrayList <PlayerReferee> >();
 		for(PlayerReferee player : players){
 			Integer score = new Integer(getScore(player.GetId()));
-System.out.println(score);
 			if(!scores.containsKey(score)){
 				ArrayList <PlayerReferee> array = new ArrayList <PlayerReferee>();
 				scores.put(score, array);
