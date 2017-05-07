@@ -24,6 +24,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
+import java.net.ServerSocket;
+import java.net.Socket;
 
 abstract class MultiReferee{
 
@@ -31,40 +33,54 @@ abstract class MultiReferee{
 	private int currentTurn = 0;
 	private int frame = 0;
 	private Boolean continuer = true;
+	private Boolean echec = false;
 	private ArrayList <ArrayList <PlayerReferee> > scoreFinal = new ArrayList <ArrayList <PlayerReferee> >();
-	
+	private ArrayList <Socket> clients = new ArrayList <Socket>();
 	private ArrayList <PlayerReferee> players = new ArrayList <PlayerReferee>();
 
 	protected MultiReferee(InputStream is, PrintStream out, PrintStream err){
-		Initialiser(is, out, err);
+		Initialiser();
 		DonnerInputInitial();
-		for(currentTurn = 0; currentTurn < nbTurnsMax && continuer; currentTurn++){
+		for(currentTurn = 0; currentTurn < nbTurnsMax && continuer && !echec; currentTurn++){
 			Tour();
 		}
 		Collections.reverse(scoreFinal);
 		PrintClassement();
+		Fermer();
 	}
 	
-	private void Initialiser(InputStream is, PrintStream out, PrintStream err){
+	private void Initialiser(){
 		int nbPlayers = getMinimumPlayerCount();
 		nbTurnsMax = getMaxRoundCount(nbPlayers);
 		Properties prop = new Properties();
 		prop.put("seed", String.valueOf(new Random(System.currentTimeMillis()).nextLong()));
-		prop.put("shipsPerPlayer", "1");
+		prop.put("shipsPerPlayer", "2");
 		prop.put("barrelCount", "10");
 		prop.put("mineCount", "10");
 		try{
 			initReferee(nbPlayers, prop);
-		}catch(InvalidFormatException e){}
+		}catch(InvalidFormatException e){
+			System.err.println("[ERROR] Format invalide");
+			echec = true;
+			return;
+		}
 		for(int i = 0; i < nbPlayers; i++){
-			players.add(new PlayerReferee(i, is, out, err));
+			try{
+				ServerSocket socketServeur = new ServerSocket(4200 + i);
+				Socket socketClient = socketServeur.accept();
+				clients.add(socketClient);
+				players.add(new PlayerReferee(i, socketClient.getInputStream(), new PrintStream(socketClient.getOutputStream()), System.err));
+			}catch(IOException e){
+				System.err.println("[ERROR] Échec connexion joueur" + String.valueOf(i));
+				echec = true;
+				return;
+			}
 		}
 	}
 
 	private void DonnerInputInitial(){
 		for(PlayerReferee player : players){
 			int i = player.GetId();
-			player.PrintErr("Input initial joueur " + String.valueOf(i) + " :");
 			for(String input : getInitInputForPlayer(i)){
 				player.PrintInput(input);
 			}
@@ -77,9 +93,6 @@ abstract class MultiReferee{
 		for(Iterator <PlayerReferee> it = players.iterator(); it.hasNext();){
 			PlayerReferee player = it.next();
 			int i = player.GetId();
-			player.PrintErr("===========================");
-			player.PrintErr("Tour " + String.valueOf(currentTurn) + " :");
-			player.PrintErr("Input joueur " + String.valueOf(i) + " :");
 			for(String input : getInputForPlayer(currentTurn, i)){
 				player.PrintInput(input);
 			}
@@ -90,17 +103,17 @@ abstract class MultiReferee{
 					handlePlayerOutput(frame, currentTurn, i, new String[] {output});
 				}
 				catch(InvalidInputException e){
-					player.PrintErr("PERDU !");
+					System.out.println("Input invalide joueur" + String.valueOf(i));
 					exaequos.add(player);
 					it.remove();
 				}
 				catch(LostException e){
-					player.PrintErr("PERDU !");
+					System.out.println("Défaite joueur" + String.valueOf(i));
 					exaequos.add(player);
 					it.remove();
 				}
 				catch(WinException e){
-					player.PrintErr("GAGNÉ !");
+					System.out.println("Victoire joueur" + String.valueOf(i));
 					continuer = false;
 					while(it.hasNext()){
 						exaequos.add(it.next());
@@ -108,6 +121,7 @@ abstract class MultiReferee{
 					}
 				}
 			}catch(IOException e){
+				System.err.println("[ERROR] Échec lecture input joueur" + String.valueOf(player.GetId()));
 				it.remove();
 			}
 		}
@@ -118,28 +132,36 @@ abstract class MultiReferee{
 			updateGame(currentTurn);
 		}
 		catch(GameOverException e){
-			Map <Integer, ArrayList <PlayerReferee> > scores = new TreeMap <Integer, ArrayList <PlayerReferee> >();
-			for(PlayerReferee player : players){
-				Integer score = new Integer(getScore(player.GetId()));
-				if(!scores.containsKey(score)){
-					ArrayList <PlayerReferee> array = new ArrayList <PlayerReferee>();
-					scores.put(score, array);
-				}
-				scores.get(score).add(player);
-			}
-			for(Map.Entry<Integer, ArrayList <PlayerReferee> > entry : scores.entrySet()){
-				scoreFinal.add(entry.getValue());
-			}
-			players.clear();
+			System.out.println("Game over");
+			continuer = false;
+			ClasserSurvivants();
+			return;
 		}
 		if(players.size() == 1){
+			System.err.println("Survivor");
 			continuer = false;
 			PlayerReferee winner = players.get(0);
-			winner.PrintErr("GAGNÉ !");
 			ArrayList <PlayerReferee> array = new ArrayList <PlayerReferee>();
 			array.add(winner);
 			scoreFinal.add(array);
 		}
+	}
+	
+	private void ClasserSurvivants(){
+		Map <Integer, ArrayList <PlayerReferee> > scores = new TreeMap <Integer, ArrayList <PlayerReferee> >();
+		for(PlayerReferee player : players){
+			Integer score = new Integer(getScore(player.GetId()));
+System.out.println(score);
+			if(!scores.containsKey(score)){
+				ArrayList <PlayerReferee> array = new ArrayList <PlayerReferee>();
+				scores.put(score, array);
+			}
+			scores.get(score).add(player);
+		}
+		for(Map.Entry<Integer, ArrayList <PlayerReferee> > entry : scores.entrySet()){
+			scoreFinal.add(entry.getValue());
+		}
+		players.clear();
 	}
 	
 	private void PrintClassement(){
@@ -151,6 +173,16 @@ abstract class MultiReferee{
 			}
 			System.out.println("");
 			i++;
+		}
+	}
+
+	private void Fermer(){
+		for(Socket socketClient : clients){
+			try{
+				socketClient.close();
+			}catch(IOException e){
+				System.err.println("[ERROR] Échec fermeture socket joueur" + String.valueOf(socketClient.getLocalPort()));
+			}
 		}
 	}
 

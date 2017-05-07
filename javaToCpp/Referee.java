@@ -1314,7 +1314,7 @@ class Referee extends MultiReferee {
 
     @Override
     protected int getMaxRoundCount(int playerCount) {
-        return 2;
+        return 200;
     }
 
     @Override
