@@ -2,17 +2,17 @@ from Indentable import Indentable
 
 class EntityMother(Indentable):
 
-	def __init__(self):
-		pass
+	def __init__(self, workspace):
+		self.workspace = workspace
 
 	def write(self, entities):
-		readonlyH = open("./CPP/readonly/Entity_readonly.h", 'w')
+		readonlyH = open(self.workspace + "readonly/Entity_readonly.h", 'w')
 		readonlyH.write(self.genReadonlyH())
-		readonlyCPP = open("./CPP/readonly/Entity_readonly.cpp", 'w')
+		readonlyCPP = open(self.workspace + "readonly/Entity_readonly.cpp", 'w')
 		readonlyCPP.write(self.genReadonlyCPP())
-		templateH = open("./CPP/template/Entity.h", 'w')
+		templateH = open(self.workspace + "template/Entity.h", 'w')
 		templateH.write(self.genTemplateH())
-		templateCPP = open("./CPP/template/Entity.cpp", 'w')
+		templateCPP = open(self.workspace + "template/Entity.cpp", 'w')
 		templateCPP.write(self.genTemplateCPP())
 
 	def genReadonlyH(self):
@@ -48,7 +48,7 @@ class EntityMother(Indentable):
 		return text
 		
 	def genReadonlyCPP(self):
-		text = "#include \"./Entity_readonly.h\"\n"
+		text = "#include \"Entity_readonly.h\"\n"
 		text += "\n"
 		text += "Entity_readonly::Entity_readonly() : Entity_readonly(-1, 0, 0){}\n\n"
 		text += "Entity_readonly::Entity_readonly(int id, int x, int y){\n"
@@ -62,7 +62,7 @@ class EntityMother(Indentable):
 		return text
 
 	def genTemplateCPP(self):
-		text = "#include \"./Entity.h\"\n"
+		text = "#include \"Entity.h\"\n"
 		text += "\n"
 		text += "Entity::Entity() : Entity_readonly(){}\n\n"
 		text += "Entity::Entity(int id, int x, int y) : Entity_readonly(id, x, y){\n\n"

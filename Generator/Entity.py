@@ -3,7 +3,8 @@ from Extractor import Extractor
 
 class Entity(Indentable):
 	
-	def __init__(self, entity):
+	def __init__(self, workspace, entity):
+		self.workspace = workspace
 		self.entity = entity
 		self.name = None
 		self.nameRE = None
@@ -19,10 +20,10 @@ class Entity(Indentable):
 		self.nameRE = self.name + "_readonly"
 
 	def write(self):
-		readonlyH = open("./CPP/readonly/entities/" + self.nameRE + ".h", 'w')
-		readonlyCPP = open("./CPP/readonly/entities/" + self.nameRE + ".cpp", 'w')
-		templateH = open("./CPP/template/entities/" + self.name + ".h", 'w')
-		templateCPP = open("./CPP/template/entities/" + self.name + ".cpp", 'w')
+		readonlyH = open(self.workspace + "readonly/entities/" + self.nameRE + ".h", 'w')
+		readonlyCPP = open(self.workspace + "readonly/entities/" + self.nameRE + ".cpp", 'w')
+		templateH = open(self.workspace + "template/entities/" + self.name + ".h", 'w')
+		templateCPP = open(self.workspace + "template/entities/" + self.name + ".cpp", 'w')
 		readonlyH.write(self.genReadonlyH())
 		readonlyCPP.write(self.genReadonlyCPP())
 		templateH.write(self.genTemplateH())

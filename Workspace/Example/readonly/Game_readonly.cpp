@@ -1,4 +1,4 @@
-#include "./Game_readonly.h"
+#include "Game_readonly.h"
 
 Game_readonly::Game_readonly(){
 }

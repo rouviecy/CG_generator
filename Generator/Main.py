@@ -2,13 +2,13 @@ from Indentable import Indentable
 
 class Main(Indentable):
 
-	def __init__(self):
-		pass
+	def __init__(self, workspace):
+		self.workspace = workspace
 
 	def write(self, entities):
-		readonlyCPP = open("./CPP/readonly/main.cpp", 'w')
+		readonlyCPP = open(self.workspace + "readonly/main_readonly.cpp", 'w')
 		readonlyCPP.write(self.genReadonlyCPP(entities))
-		readonlyMonoCPP = open("./CPP/readonly/mainMono.cpp", 'w')
+		readonlyMonoCPP = open(self.workspace + "readonly/mainMono_readonly.cpp", 'w')
 		readonlyMonoCPP.write(self.genReadonlyMonoCPP(entities))
 
 	def genReadonlyCPP(self, entities):

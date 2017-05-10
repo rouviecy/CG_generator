@@ -2,7 +2,8 @@ from Extractor import Extractor
 
 class Global:
 	
-	def __init__(self):
+	def __init__(self, workspace):
+		self.workspace = workspace
 		self.excludes = []
 		self.includes = []
 		self.namespaces = []
@@ -17,9 +18,9 @@ class Global:
 		self.defines = Extractor.extractList('define', bloc)
 
 	def write(self, entities):
-		readonlyH = open("./CPP/readonly/common_readonly.h", 'w')
+		readonlyH = open(self.workspace + "readonly/common_readonly.h", 'w')
 		readonlyH.write(self.genReadonlyH(entities))
-		templateH = open("./CPP/template/common.h", 'w')
+		templateH = open(self.workspace + "template/common.h", 'w')
 		templateH.write(self.genTemplateH())
 
 	def genReadonlyH(self, entities):

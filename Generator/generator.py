@@ -7,20 +7,22 @@ from Makefile import Makefile
 import sys, os
 
 if __name__ == '__main__':
-	parser = Parser(sys.argv[1])
+	workspaceName = sys.argv[1]
+	workspace = '../Workspace/' + workspaceName + '/'
+	parser = Parser(workspace)
 	parser.analyse()
-	makefile = Makefile()
+	makefile = Makefile(workspace)
 	makefile.write(parser.entities)
-	main = Main()
+	main = Main(workspace)
 	main.write(parser.entities)
 	parser.globalBloc.write(parser.entities)
 	parser.game.write(parser.globalBloc, parser.entities)
-	entityMother = EntityMother()
+	entityMother = EntityMother(workspace)
 	entityMother.write(parser.entities)
 	for entity in parser.entities:
 		entity.write()
-	mono = open('generatedMono.cpp', 'w')
+	mono = open(workspace + '/monolithe.cpp', 'w')
 	mono.write(parser.globalBloc.genExcludedIncludes())
 	mono.close()
-	os.system("cd bin; cmake ..; make cg; make cgcode; cd ..; cat bin/CMakeFiles/cgcode.dir/CPP/readonly/mainMono.cpp.o >> ./generatedMono.cpp;")
+	os.system('cd ' + workspace + 'bin; cmake ../readonly/; make cg; make cgcode; cd ..;cat bin/CMakeFiles/cgcode.dir/mainMono_readonly.cpp.o >> ./monolithe.cpp;')
 	

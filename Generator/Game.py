@@ -3,7 +3,8 @@ from Extractor import Extractor
 
 class Game(Indentable):
 	
-	def __init__(self):
+	def __init__(self, workspace):
+		self.workspace = workspace
 		self.argumentsGame = []
 		self.argumentsTurn = []
 		self.variables = []
@@ -18,10 +19,10 @@ class Game(Indentable):
 		self.nbEntityArgs = int(Extractor.extractParam('nbEntityArgs', bloc))
 
 	def write(self, globalBloc, entities):
-		readonlyH = open("./CPP/readonly/Game_readonly.h", 'w')
-		readonlyCPP = open("./CPP/readonly/Game_readonly.cpp", 'w')
-		templateH = open("./CPP/template/Game.h", 'w')
-		templateCPP = open("./CPP/template/Game.cpp", 'w')
+		readonlyH = open(self.workspace + "readonly/Game_readonly.h", 'w')
+		readonlyCPP = open(self.workspace + "readonly/Game_readonly.cpp", 'w')
+		templateH = open(self.workspace + "template/Game.h", 'w')
+		templateCPP = open(self.workspace + "template/Game.cpp", 'w')
 		readonlyH.write(self.genReadonlyH(entities))
 		readonlyCPP.write(self.genReadonlyCPP(globalBloc, entities))
 		templateH.write(self.genTemplateH())
@@ -56,7 +57,7 @@ class Game(Indentable):
 		return text
 
 	def genReadonlyCPP(self, globalBloc, entities):
-		text = "#include \"./Game_readonly.h\"\n"
+		text = "#include \"Game_readonly.h\"\n"
 		text += "\n"
 		text += "Game_readonly::Game_readonly(){\n"
 		if len(self.argumentsGame) > 0:
@@ -149,7 +150,7 @@ class Game(Indentable):
 		return text
 
 	def genTemplateCPP(self):
-		text = "#include \"./Game.h\"\n\n"
+		text = "#include \"Game.h\"\n\n"
 		text += "Game::Game() : Game_readonly(){\n\n"
 		text += "}\n\n"
 		text += "void Game::InputTurn(){\n"

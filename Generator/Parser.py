@@ -7,8 +7,9 @@ import re
 
 class Parser:
 	
-	def __init__(self, pathInput):
-		self.pathInput = pathInput
+	def __init__(self, workspace):
+		self.workspace = workspace
+		self.pathInput = workspace + 'configuration.cg'
 		self.globalBloc = None
 		self.game = None
 		self.entities = []
@@ -35,14 +36,14 @@ class Parser:
 		entityName = Extractor.extractBloc('Entity', titre)
 		gameName = Extractor.extractBloc('Game', titre)
 		if globalName:
-			nouveau = Global()
+			nouveau = Global(self.workspace)
 			nouveau.decode(bloc)
 			self.globalBloc = nouveau
 		elif entityName:
-			nouveau = Entity(entityName)
+			nouveau = Entity(self.workspace, entityName)
 			nouveau.decode(bloc)
 			self.entities.append(nouveau)
 		elif gameName:
-			nouveau = Game()
+			nouveau = Game(self.workspace)
 			nouveau.decode(bloc)
 			self.game = nouveau

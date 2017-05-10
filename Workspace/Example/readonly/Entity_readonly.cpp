@@ -1,4 +1,4 @@
-#include "./Entity_readonly.h"
+#include "Entity_readonly.h"
 
 Entity_readonly::Entity_readonly() : Entity_readonly(-1, 0, 0){}
 
