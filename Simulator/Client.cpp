@@ -2,6 +2,17 @@
 
 using namespace std;
 
+// Se connecter au simulateur CodinGame en utilisant un exécutable comme joueur
+//	argv[1] : chemin vers l'exécutable joueur
+//	argv[2] : adresse IP du simulateur CodinGame
+//	argv[3] : port du simulateur CodinGame
+int main(int argc, char *argv[]){
+	Client client;
+	client.OuvrirTCP(argv[2], stoi(argv[3]));
+	client.OuvrirPipes(argv[1]);
+	return 1;
+}
+
 Client::Client(){
 	connected = false;
 }
@@ -29,7 +40,7 @@ void Client::OuvrirTCP(const char* ip, int port){
 	return;
 }
 
-void Client::OuvrirPipes(){
+void Client::OuvrirPipes(const char* executablePath){
 	if(!connected){return;}
 	if(pipe(pipeIn) == -1 || pipe(pipeOut) == -1){
 		cerr << "Echec création pipes" << endl;
@@ -43,7 +54,7 @@ void Client::OuvrirPipes(){
 		dup2(pipeOut[1], fileno(stdout));
 		close(pipeIn[1]);
 		close(pipeOut[0]);
-		execl("test", "test", (void *) NULL);
+		execl(executablePath, executablePath, (void *) NULL);
 	}
 	else{
 		close(pipeIn[0]);
@@ -75,11 +86,4 @@ void Client::TCPToPipeLoop(){
 			connected = false;
 		}
 	}
-}
-
-int main(int argc, char *argv[]){
-	Client client;
-	client.OuvrirTCP(argv[1], stoi(argv[2]));
-	client.OuvrirPipes();
-	return 1;
 }

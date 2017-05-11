@@ -2,6 +2,8 @@ Generator/__pycache__/*
 Workspace/Example/bin/*
 Workspace/Example/custom/**/*.cpp
 Workspace/Example/custom/**/*.h
-javaToCpp/*.class
-javaToCpp/client*
-javaToCpp/test*
+Simulator/*.class
+Simulator/*.o
+Simulator/client
+Simulator/joueurIdiot
+Simulator/joueurMoinsIdiot

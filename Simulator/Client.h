@@ -13,8 +13,11 @@ class Client{
 
 public:
 	Client();
-	void OuvrirTCP(const char* ip, int port);
-	void OuvrirPipes();
+	void OuvrirTCP(				// Se connecter au simulateur CodinGame (Referee.java)
+		const char* ip,				// Adresse IP du serveur
+		int port);				// Port du serveur
+	void OuvrirPipes(			// Se connecter à l'exécutable joueur
+		const char* executablePath);		// Chemin vers l'exécutable
 
 private:
 	pid_t pid;
