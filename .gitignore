@@ -1,3 +1,4 @@
+interactions.graphml
 Generator/__pycache__/*
 Workspace/Example/bin/*
 Workspace/Example/custom/**/*.cpp

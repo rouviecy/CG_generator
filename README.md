@@ -1,6 +1,6 @@
 # CG_Generator
 
-Features :
+### Features
 * Génération de code C++ pour CodinGame à partir d'un fichier de configuration simplifié
 * Gestion de code en readonly et custom pour ne pas perdre après regénération le code ajouté manuellement
 * Agglomération de tout le code dans un fichier unique directement uploadable vers CodinGame
@@ -9,7 +9,8 @@ Features :
 
 ## Generator
 
-Utilisation :
+### Utilisation
+
 1. Se placer dans le répertoire de génération via `cd Generator`
 2. Générer les sources C++ via `python generator.py Example` (la première génération complète va échouer sans les codes éditables)
 3. Copier les templates vers le dossier du code editable via `cp -R ../Workspace/Example/template/* ../Workspace/Example/custom/`
@@ -19,7 +20,8 @@ Utilisation :
 7. L'exécutable est `../Workspace/Example/bin/cg`
 8. Enjoy !
   
-Remarques :
+### Remarques
+
 * Ne pas faire attention à l'erreur `CMakeFiles/cgcode.dir/mainMono.cpp.o: file format not recognized; treating as linker script`
 * Le main n'est pas modifiable pour l'instant
 * On ne peut pas ajouter de fichier source pour l'instant
@@ -27,7 +29,8 @@ Remarques :
 
 ## Simulator
 
-Utilisation :
+### Utilisation
+
 1. Se placer dans le répertoire de simulation via `cd Simulator`
 2. Importer le fichier `Referee.java` fourni par CodinGame
 3. Régler les paramètres du simulateur dans `MultiReferee.java` (méthode `Initialiser()`)
@@ -38,3 +41,7 @@ Utilisation :
     * `ip` l'adresse IP du serveur de simulation (ici 127.0.0.1)
     * `port` le port du serveur de simulation (4200 pour le premier joueur, 4201 pour le deuxième joueur, etc.)
 7. Lorsque tous les joueurs sont connectés, la simulation se lance et donne le classement en sortie console (TODO : API de multi-run et algorithmes génétiques)
+
+## Interactions
+
+![Interactions](https://raw.githubusercontent.com/rouviecy/CG_generator/master/interactions.png)
